@@ -13,8 +13,10 @@ namespace Ivory\Base64FileBundle\Form\Extension;
 
 use Ivory\Base64FileBundle\Form\DataTransformer\Base64FileTransformer;
 use Symfony\Component\Form\AbstractTypeExtension;
+use Symfony\Component\Form\Event\PreSubmitEvent;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -43,6 +45,11 @@ class Base64FileExtension extends AbstractTypeExtension
     {
         if ($options['base64']) {
             $builder->addViewTransformer(new Base64FileTransformer());
+            //If we dont stop Propagation, array will not be recognised by the FileType listener.
+            //Prevent the FileType to be called, but the multiple options is now not available for base64 file
+            $builder->addEventListener(FormEvents::PRE_SUBMIT, function (PreSubmitEvent $event) use ($options) {
+                $event->stopPropagation();
+            }, 100);
         }
     }
 
