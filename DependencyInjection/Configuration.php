@@ -24,8 +24,8 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $builder = $treeBuilder->root('ivory_base64_file');
+        $treeBuilder = new TreeBuilder('ivory_base64_file');
+        $builder = $treeBuilder->getRootNode();
 
         $builder
             ->children()

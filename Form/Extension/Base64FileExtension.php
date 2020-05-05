@@ -65,8 +65,8 @@ class Base64FileExtension extends AbstractTypeExtension
     /**
      * {@inheritdoc}
      */
-    public function getExtendedType()
+    public function getExtendedTypes()
     {
-        return method_exists(AbstractType::class, 'getBlockPrefix') ? FileType::class : 'file';
+        return method_exists(AbstractType::class, 'getBlockPrefix') ? [FileType::class] : ['file'];
     }
 }
