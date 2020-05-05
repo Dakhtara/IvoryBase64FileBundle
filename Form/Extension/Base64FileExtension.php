@@ -12,7 +12,6 @@
 namespace Ivory\Base64FileBundle\Form\Extension;
 
 use Ivory\Base64FileBundle\Form\DataTransformer\Base64FileTransformer;
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\AbstractTypeExtension;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -65,8 +64,8 @@ class Base64FileExtension extends AbstractTypeExtension
     /**
      * {@inheritdoc}
      */
-    public function getExtendedTypes()
+    public static function getExtendedTypes(): iterable
     {
-        return method_exists(AbstractType::class, 'getBlockPrefix') ? [FileType::class] : ['file'];
+        yield FileType::class;
     }
 }
