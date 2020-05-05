@@ -36,12 +36,5 @@ class IvoryBase64FileExtension extends ConfigurableExtension
         $container
             ->getDefinition($formExtension = 'ivory.base64_file.form.extension')
             ->addArgument($config['default']);
-
-        if (!method_exists(AbstractType::class, 'getBlockPrefix')) {
-            $container
-                ->getDefinition($formExtension)
-                ->clearTag('form.type_extension')
-                ->addTag('form.type_extension', ['alias' => 'file']);
-        }
     }
 }

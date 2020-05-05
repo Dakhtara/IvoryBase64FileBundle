@@ -49,7 +49,7 @@ class Base64FileTransformer implements DataTransformerInterface
             'value'    => $value->getData(true, false),
             'name'     => $uploadedFile ? $value->getClientOriginalName() : null,
             'mimeType' => $uploadedFile ? $value->getClientMimeType() : $value->getMimeType(),
-            'size'     => $uploadedFile ? $value->getClientSize() : $value->getSize(),
+            'size'     => $value->getSize(),
         ];
     }
 

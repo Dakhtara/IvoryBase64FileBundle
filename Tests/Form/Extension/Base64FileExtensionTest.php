@@ -14,12 +14,13 @@ namespace Ivory\Base64FileBundle\Tests\Form\Extension;
 use Ivory\Base64FileBundle\Form\Extension\Base64FileExtension;
 use Ivory\Base64FileBundle\Model\Base64File;
 use Ivory\Base64FileBundle\Model\UploadedBase64File;
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\Forms;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Validation;
 
 /**
@@ -36,27 +37,38 @@ class Base64FileExtensionTest extends \PHPUnit_Framework_TestCase
      * @var string
      */
     private $formType;
+    /**
+     * @var FormFactoryInterface
+     */
+    private $httpFactory;
 
     /**
      * {@inheritdoc}
      */
     protected function setUp()
     {
+        $this->httpFactory = Forms::createFormFactoryBuilder()
+            ->addTypeExtension(new Base64FileExtension(false))
+            ->addExtension(new HttpFoundationExtension())
+            ->addExtension(new ValidatorExtension(Validation::createValidator()))
+            ->getFormFactory();
         $this->factory = Forms::createFormFactoryBuilder()
             ->addTypeExtension(new Base64FileExtension(false))
             ->addExtension(new ValidatorExtension(Validation::createValidator()))
             ->getFormFactory();
 
-        $this->formType = method_exists(AbstractType::class, 'getBlockPrefix') ? FileType::class : 'file';
+        $this->formType = FileType::class;
     }
 
     public function testSubmitFile()
     {
-        $form = $this->factory
+        $form = $this->httpFactory
             ->create($this->formType)
             ->submit($file = new File(__DIR__.'/../../Fixtures/Model/binary'));
 
+        $this->assertTrue($form->isSubmitted());
         $this->assertTrue($form->isValid());
+        $this->assertNotNull($form->getData());
         $this->assertSame($file, $form->getData());
     }
 
@@ -76,13 +88,13 @@ class Base64FileExtensionTest extends \PHPUnit_Framework_TestCase
             ->create($this->formType, null, ['base64' => true])
             ->submit($submitData = $this->getMinimalSubmitData());
 
+        $this->assertTrue($form->isSubmitted());
         $this->assertTrue($form->isValid());
         $this->assertInstanceOf(UploadedBase64File::class, $data = $form->getData());
 
         $this->assertSame($submitData['value'], $data->getData(true, false));
         $this->assertSame($submitData['name'], $data->getClientOriginalName());
         $this->assertSame('application/octet-stream', $data->getClientMimeType());
-        $this->assertNull($data->getClientSize());
     }
 
     public function testSubmitMaximalValidBase64()
@@ -97,13 +109,13 @@ class Base64FileExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($submitData['value'], $data->getData(true, false));
         $this->assertSame($submitData['name'], $data->getClientOriginalName());
         $this->assertSame($submitData['mimeType'], $data->getClientMimeType());
-        $this->assertSame($submitData['size'], $data->getClientSize());
+        $this->assertSame($submitData['size'], $data->getSize());
     }
 
     public function testSubmitInvalidStructure()
     {
         $form = $this->factory
-            ->create($this->formType, null, ['base64' => true])
+            ->create($this->formType, null, ['base64' => true, 'constraints'=> [new NotNull()]])
             ->submit('foo');
 
         $this->assertFalse($form->isValid());
@@ -160,21 +172,17 @@ class Base64FileExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($data, $form->getData());
     }
 
-    /**
-     * @expectedException \Symfony\Component\Form\Exception\TransformationFailedException
-     * @expectedExceptionMessage Expected an "Ivory\Base64FileBundle\Model\Base64FileInterface", got "stdClass".
-     */
     public function testInvalidInitialData()
     {
+        $this->expectException(\Symfony\Component\Form\Exception\TransformationFailedException::class);
+        $this->expectExceptionMessage("Expected an \"Ivory\Base64FileBundle\Model\Base64FileInterface\", got \"stdClass\".");
         $this->factory->create($this->formType, new \stdClass(), ['base64' => true]);
     }
 
-    /**
-     * @expectedException \Symfony\Component\OptionsResolver\Exception\InvalidOptionsException
-     * @expectedExceptionMessage The option "base64" with value "foo" is expected to be of type "bool"
-     */
     public function testInvalidBase64Option()
     {
+        $this->expectExceptionMessage("The option \"base64\" with value \"foo\" is expected to be of type \"bool\"");
+        $this->expectException(\Symfony\Component\OptionsResolver\Exception\InvalidOptionsException::class);
         $this->factory->create($this->formType, null, ['base64' => 'foo']);
     }
 
@@ -186,6 +194,7 @@ class Base64FileExtensionTest extends \PHPUnit_Framework_TestCase
         return [
             'value' => $this->getBase64Data(),
             'name'  => 'filename.png',
+            'error' => 0
         ];
     }
 
