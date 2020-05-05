@@ -16,7 +16,9 @@ file that was distributed with this source code.
         <service
             id="ivory.base64_file.form.extension"
             class="Ivory\Base64FileBundle\Form\Extension\Base64FileExtension"
+            public="true"
         >
+            <tag name="form.type_extension" />
         </service>
     </services>
 </container>
