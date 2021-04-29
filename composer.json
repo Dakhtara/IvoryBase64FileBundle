@@ -11,16 +11,16 @@
         }
     ],
     "require": {
-        "php": "^7.0",
-        "symfony/framework-bundle": "^4.4",
-        "symfony/form": "^4.4"
+        "php": "^7.0|^8.0",
+        "symfony/framework-bundle": "^4.4|^5.1",
+        "symfony/form": "^4.4|^5.1"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^2.0",
         "phpunit/phpunit": "^5.0",
         "symfony/phpunit-bridge": "^4.4",
-        "symfony/validator": "^4.4",
-        "symfony/yaml": "^4.4"
+        "symfony/validator": "^4.4|^5.1",
+        "symfony/yaml": "^4.4|^5.1"
     },
     "autoload": {
         "psr-4": { "Ivory\\Base64FileBundle\\": "" }
